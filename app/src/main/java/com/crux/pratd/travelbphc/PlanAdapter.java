@@ -37,6 +37,8 @@ import static com.crux.pratd.travelbphc.LoginActivity.db;
 
 public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.MyViewHolder> {
 
+    private static final String TEST_TAG = "TEST/";
+
     private List<TravelPlan> plans;
     private Context context;
 
@@ -47,6 +49,7 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.MyViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
+        Log.d(TEST_TAG,"Binding view at pos "+position);
         final DatabaseReference mRef = FirebaseDatabase.getInstance().getReference();
         final TravelPlan plan = plans.get(position);
         holder.source.setText(plan.getSource());
