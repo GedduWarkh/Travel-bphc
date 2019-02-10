@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,7 +38,12 @@ import static com.crux.pratd.travelbphc.LoginActivity.db;
 
 public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.MyViewHolder> {
 
-    private static final String TEST_TAG = "TEST/";
+    private static final String TEST_TAG = "TEST";
+
+    private int expPosition = RecyclerView.NO_POSITION;
+    private boolean expand = true;
+
+    private RecyclerView mRecyclerView;
 
     private List<TravelPlan> plans;
     private Context context;
@@ -45,6 +51,12 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.MyViewHolder> 
     PlanAdapter(List<TravelPlan> travelPlans, Context context) {
         this.plans = travelPlans;
         this.context = context;
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        mRecyclerView = recyclerView;
     }
 
     @Override
@@ -79,21 +91,49 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.MyViewHolder> 
                     });
             disp[i++] = v;
         }
-        final LinearLayout container = new LinearLayout(holder.view_travellers.getContext());
-        container.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        container.setOrientation(LinearLayout.VERTICAL);
-        for (View list : disp) {
-            container.addView(list);
+
+
+//        final LinearLayout container = new LinearLayout(holder.view_travellers.getContext());
+//        container.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+//        container.setOrientation(LinearLayout.VERTICAL);
+//        for (View list : disp) {
+//            container.addView(list);
+//        }
+//        AlertDialog.Builder builder = new AlertDialog.Builder(holder.view_travellers.getContext());
+//        builder.setView(container);
+//        final AlertDialog dialog = builder.create();
+//        holder.view_travellers.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                dialog.show();
+//            }
+//        });
+
+        for(View list:disp){
+            holder.traveller_list.addView(list);
         }
-        AlertDialog.Builder builder = new AlertDialog.Builder(holder.view_travellers.getContext());
-        builder.setView(container);
-        final AlertDialog dialog = builder.create();
+
+//        reloadItem(position,holder);
         holder.view_travellers.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                dialog.show();
+            public void onClick(View v) {
+                int lastPosition = expPosition;
+                expPosition = holder.getAdapterPosition();
+
+                TransitionManager.beginDelayedTransition(mRecyclerView);
+                if(lastPosition != RecyclerView.NO_POSITION && lastPosition!=expPosition){
+                    reloadItem(lastPosition,holder);
+                }
+                if(lastPosition == expPosition)
+                    expand = !expand;
+                else
+                    expand = true;
+
+                reloadItem(expPosition,holder);
+                Log.d(TEST_TAG,"Clicked on postion " +holder.getAdapterPosition());
             }
         });
+
 
         if (plan.getSpace().equals("1") || plan.getSpace().equals("2") || plan.getSpace().equals("0")) {
             holder.space_left.setTextColor(Color.rgb(255, 0, 0));
@@ -191,6 +231,14 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.MyViewHolder> 
         });
     }
 
+    private void reloadItem(int position, final MyViewHolder holder) {
+        boolean isExpanded = expPosition==position && expand;
+
+        Log.d(TEST_TAG,"Visibility is " + isExpanded);
+        holder.traveller_list.setVisibility(isExpanded?View.VISIBLE:View.GONE);
+
+    }
+
     @Override
     public int getItemCount() {
         return plans.size();
@@ -207,6 +255,7 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.MyViewHolder> 
         TextView source, dest, date, time, space_left, view_travellers;
         View card;
         View indicator;
+        LinearLayout traveller_list;
 
         MyViewHolder(View view) {
             super(view);
@@ -219,6 +268,7 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.MyViewHolder> 
             view_travellers = view.findViewById(R.id.viewtravellers);
             indicator = view.findViewById(R.id.indicator);
             card = view.findViewById(R.id.cardView);
+            traveller_list = view.findViewById(R.id.co_travellers);
         }
     }
 }
